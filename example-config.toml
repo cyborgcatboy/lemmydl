@@ -1,0 +1,12 @@
+# an example config.toml file
+# it's assumed to be in the ~/.config/lemmydl directory, but can be specified with the -x argument
+# make sure to rename this file to config.toml once you move it into the correct directory!
+
+username = "username"
+password = "password" # you can put your plaintext password here, but that's a security risk, see below
+password_command = "password --command" # overrides password field with the stdout of this command
+
+instance = "https://url.to.instance" # while you can just put the DNS address, it's not reccommended
+output_dir = "/path/to/downloads" # the path that downloaded posts will go into
+dont_clean_text = false # if true, spaces et al won't be cleaned from names, not reccomended for windows systems
+max = false # always get all the posts
