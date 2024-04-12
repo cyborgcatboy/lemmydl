@@ -6,7 +6,7 @@ install the (singular) requirement in requirements.txt, which is [pythorhead](ht
 
 lemmydl.py can be executed either with or without python.
 
-Made with python 3.11, should work on any python 3.6+ 
+Made with python 3.11, can probably get working on any python 3.6+ if you tweak `tomllib` to be a different library.
 
 ## usage
 refer to `lemmydl.py --help` for command line arguments.
