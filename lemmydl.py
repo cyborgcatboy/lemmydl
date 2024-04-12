@@ -179,6 +179,26 @@ def get_post_list(count=0, community_id: Optional[int]=None, community_name: Opt
             media_posts = get_media_posts(post_list)
             if media_posts is not None:
                 download_posts(page, media_posts, count)
+
+def get_user_post_list(count=0, user_name: Optional[str]=None, sort_type: Optional[SortType]=None, saved: bool=False):
+    posts_per_page = 20 
+    pprint(f"Getting ~{count} posts in groups of {posts_per_page}", "0;34")
+    pages = int(math.ceil(count/posts_per_page))
+    if args.verbose: print("Total number of pages:", pages)
+    for page in range(1, pages + 1):
+        if args.verbose: print("Getting page", page, "of", pages)
+        post_list = lemmy.user.get(username=user_name, page=page, limit=posts_per_page, sort=sort_type, saved_only=saved) # note to self: pages start at 1
+        if post_list is None:
+            raise Exception(pstr("Failed getting user posts! (can be an issue with pythorhead)", "1;31"))
+        
+        print(post_list)
+        time.sleep(request_delay)
+        if post_list is not None:
+            media_posts = get_media_posts(post_list)
+            if media_posts is not None:
+                download_posts(page, media_posts, count)
+
+
 #"""
 """
 TODO
@@ -202,11 +222,12 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--number", help=pstr("the number of posts to get", "0;36"), type=int, default=20)
     parser.add_argument("-m", "--max", help=pstr("get all the posts in a community, only works if getting a community, doesn't work with feeds", "0;36"), action='store_true', default=False)
     parser.add_argument("-c", "--community", help=pstr("the name or id of the community to get. e.g. <name> for a local community and <name>@instance.net for a federated one. for a numerically name community, use the full federated name .", "0;36"))
+    parser.add_argument("-U", "--get-user", help=pstr("the name of the user to get. follows similar conventions to community.", "0;36"))
     parser.add_argument("-s", "--sort", help=pstr("the way to sort the posts (default: new)", "0;36"), choices=[
         'hot', 'new', 'old', 'active', 'top_all', 'top_day', 'top_week', 'top_month', 'top_year', 'top_hour', 'top_sixhour', 'top_twelvehour', 'new_comments', 'most_comments'
     ], default='new')
 
-    parser.add_argument("-f", "--feed", help=pstr("the name of the feed to get (default: community)", "0;36"), choices=['all', 'community', 'local', 'subscribed'], default='community')
+    parser.add_argument("-f", "--feed", help=pstr("the name of the feed to get (default: community)", "0;36"), choices=['all', 'community', 'local', 'subscribed', 'user', 'saved'], default='community')
     parser.add_argument("-o", "--output_dir", help=pstr("specify the name of the output directory downloads are stored in", "0;36"), type=str)
     parser.add_argument("-a", "--all", help=pstr("get all posts, not just the ones with media in them", "0;36"), action='store_true')
     parser.add_argument("-t", "--dont_clean_text", help=pstr("don't clean post and community path names (not recommended for windows systems, off by default)", "0;36"), action='store_true')
@@ -222,6 +243,7 @@ if __name__ == "__main__":
         count
         max - get all the posts from the community << optional
         community - id or name or url << optional
+        get_user - name or url << optional
         sort type << optional
         feed name - subscribed all local etc << optional
         dir_name << optional
@@ -301,7 +323,7 @@ if __name__ == "__main__":
         feed_type = ListingType.Subscribed
 
 
-    if args.verbose: print("Feed Type:", feed_type)
+    if args.verbose and feed_type: print("Feed Type:", feed_type)
 
     sort_type = None
     if args.sort == "hot":
@@ -352,6 +374,17 @@ if __name__ == "__main__":
     if args.verbose: print("Community ID:", community_id)
     if args.verbose: print("Community Name:", community_name)
 
+    get_user_name = None
+
+    if args.get_user is not None: 
+        get_user_name = args.get_user
+
+    if args.feed == "user" or args.feed == "saved":
+        if get_user_name is None:
+            raise Exception("You need to specify a username of the user you want to get!")
+    
+    if args.verbose: print("Username of user to get:", get_user_name)
+
     if username == None or password == None or instance_url == None:
         raise Exception("You must specify a username, password and instance !!")
 
@@ -370,6 +403,12 @@ if __name__ == "__main__":
         number = comm["community_view"]["counts"]["posts"]
         if args.verbose: print("Total posts:", number)
 
-    get_post_list(number, community_id, community_name, sort_type, feed_type)
+    if feed_type:
+        get_post_list(number, community_id, community_name, sort_type, feed_type)
+    elif args.feed == "user":
+        get_user_post_list(number, get_user_name, sort_type, False)
+    elif args.feed == "saved":
+        get_user_post_list(number, get_user_name, sort_type, True)
+
     pprint(f"\nSuccess !! :3", "1;32")
     # """
