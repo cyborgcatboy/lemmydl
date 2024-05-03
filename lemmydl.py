@@ -92,11 +92,13 @@ def download_file(url, file_path):
 
 def get_media_posts(post_list):
     media_posts = []
-    for post in post_list:
+    print(json.dumps(post_list, indent=4))
+    for post in post_list['comments']:
         image_urls = []
         use_post = False
         if args.all:
             use_post = True
+        print("post:", post)
         if "url" in post["post"]:
             if is_image_url(post["post"]["url"]):
                 image_urls.append(post["post"]["url"])
@@ -191,7 +193,6 @@ def get_user_post_list(count=0, user_name: Optional[str]=None, sort_type: Option
         if post_list is None:
             raise Exception(pstr("Failed getting user posts! (can be an issue with pythorhead)", "1;31"))
         
-        print(post_list)
         time.sleep(request_delay)
         if post_list is not None:
             media_posts = get_media_posts(post_list)
