@@ -92,13 +92,11 @@ def download_file(url, file_path):
 
 def get_media_posts(post_list):
     media_posts = []
-    print(json.dumps(post_list, indent=4))
     for post in post_list['comments']:
         image_urls = []
         use_post = False
         if args.all:
             use_post = True
-        print("post:", post)
         if "url" in post["post"]:
             if is_image_url(post["post"]["url"]):
                 image_urls.append(post["post"]["url"])
